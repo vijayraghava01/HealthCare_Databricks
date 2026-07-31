@@ -1,0 +1,47 @@
+project:
+  name: healthcare_data_platform
+  version: 1.0
+
+patients:
+  rows: 20000
+
+providers:
+  rows: 3000
+
+hospitals:
+  rows: 300
+
+insurance:
+  rows: 150
+
+medications:
+  rows: 2000
+
+diagnosis:
+  rows: 2000
+
+procedures:
+  rows: 2000
+
+appointments:
+  rows: 100000
+
+claims:
+  rows: 100000
+
+payments:
+  rows: 120000
+
+updates:
+  rows: 20000
+
+claim_lines:
+  min_lines_per_claim: 1
+  max_lines_per_claim: 5
+
+output:
+  raw: output/raw
+  bad: output/bad_data
+  streaming: output/streaming
+  cdc: output/cdc
+

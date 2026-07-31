@@ -1,0 +1,34 @@
+# Python
+
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual Environment
+
+.venv/
+.vscode/
+
+healthcare_data_platform/output/
+# Generated data
+
+output/
+*.csv
+
+# IDE
+
+.vscode/
+.idea/
+
+# Logs
+
+*.log
+
+# Databricks
+
+.databricks/
+
+# OS
+
+.DS_Store
+Thumbs.db
