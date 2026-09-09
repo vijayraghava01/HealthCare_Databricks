@@ -1,0 +1,19 @@
+resources:
+  jobs:
+    bronze_import_test_job:
+      name: healthcare_bronze_import_test
+
+      tasks:
+        - task_key: test_healthcare_package
+
+          notebook_task:
+            notebook_path: ../notebooks/bronze/bronze_import_test.py
+
+          environment_key: default
+
+      environments:
+        - environment_key: default
+          spec:
+            client: "2"
+            dependencies:
+              - ../dist/*.whl

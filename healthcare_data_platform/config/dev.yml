@@ -1,9 +1,0 @@
-catalog: workspace
-
-schema: bronze
-
-landing_path: /Volumes/workspace/default/raw/claims
-
-bronze_table: claims_bronze
-
-checkpoint_path: /Volumes/workspace/default/checkpoints/claims

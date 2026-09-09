@@ -188,3 +188,179 @@ class AppointmentGenerator:
         print(df.head())
 
         return df
+    
+    def _generate_appointment(self,appointmentNumber):
+        patients = DataLoader.load_csv(
+                    "output/raw/patients.csv"
+                )
+        
+        providers = DataLoader.load_csv(
+                    "output/raw/providers.csv"
+                )
+        
+        diagnosis = DataLoader.load_csv(
+                    "output/raw/diagnosis_codes.csv"
+                )
+        
+        patient = patients.sample(1).iloc[0]
+        
+        provider = providers.sample(1).iloc[0]
+        
+        eligible = diagnosis[
+                        diagnosis["Specialty"] ==
+                        provider["Specialty"]
+                    ]
+        
+        if eligible.empty:
+        
+            eligible = diagnosis
+        
+        diagnosis_row = eligible.sample(1).iloc[0]
+        
+        visit_type = random.choices(
+                        VISIT_TYPES,
+                        weights=VISIT_TYPE_WEIGHTS,
+                        k=1
+                    )[0]
+        
+        appointment_status = random.choices(
+                        APPOINTMENT_STATUS,
+                        weights=APPOINTMENT_STATUS_WEIGHTS,
+                        k=1
+                    )[0]
+        
+        priority = random.choices(
+                        PRIORITY,
+                        weights=PRIORITY_WEIGHTS,
+                        k=1
+                    )[0]
+        
+        appointment_date = fake.date_between(
+                        "-3y",
+                        "today"
+                    )
+        
+        hour = random.randint(
+                        BUSINESS_START_HOUR,
+                        BUSINESS_END_HOUR - 1
+                    )
+        
+        minute = random.choice(
+                        [0, 15, 30, 45]
+                    )
+        
+        start_datetime = datetime(
+                        appointment_date.year,
+                        appointment_date.month,
+                        appointment_date.day,
+                        hour,
+                        minute
+                    )
+        
+        if visit_type == "Outpatient":
+        
+            duration = random.randint(15, 45)
+        
+        elif visit_type == "Emergency":
+        
+            duration = random.randint(30, 180)
+        
+        else:
+        
+            duration = random.randint(60, 240)
+        
+        end_datetime = (
+                        start_datetime +
+                        timedelta(minutes=duration)
+                    )
+        return{
+                    "Appointment_ID":
+                                f"APT{appointmentNumber:06}",
+            
+                            "Patient_ID":
+                                patient["Patient_ID"],
+            
+                            "Provider_ID":
+                                provider["Provider_ID"],
+            
+                            "Hospital_ID":
+                                provider["Hospital_ID"],
+            
+                            "Hospital_Name":
+                                provider["Hospital_Name"],
+            
+                            "Department":
+                                provider["Specialty"],
+            
+                            "Diagnosis_ID":
+                                diagnosis_row["Diagnosis_ID"],
+            
+                            "Visit_Type":
+                                visit_type,
+            
+                            "Appointment_Status":
+                                appointment_status,
+            
+                            "Priority":
+                                priority,
+            
+                            "Appointment_Date":
+                                appointment_date,
+            
+                            "Start_Time":
+                                start_datetime.strftime("%H:%M"),
+            
+                            "End_Time":
+                                end_datetime.strftime("%H:%M"),
+            
+                            "Duration_Minutes":
+                                duration,
+            
+                            "Created_Date":
+                                appointment_date,
+            
+                            "Updated_Date":
+                                appointment_date
+        }
+
+    
+    def _generate_appointments(self, start_appointment_number, row_count):
+        return [
+        self._generate_appointment(appointment_number)
+        for appointment_number in range(
+            start_appointment_number,
+            start_appointment_number + row_count,
+        )
+    ]
+
+
+    def generate_incremental(
+        self,
+        start_appointment_number,
+        row_count=100,
+        output_file="output/raw/appointments_increment_001.csv",
+    ):
+        appointments = self._generate_appointments(
+            start_appointment_number=start_appointment_number,
+            row_count=row_count,
+        )
+
+        df = pd.DataFrame(appointments)
+
+        CsvWriter.write(
+            df,
+            output_file,
+        )
+
+        print(
+            f"Generated {len(df)} incremental appointments"
+        )
+
+        print(
+            f"Appointment IDs: "
+            f"APT{start_appointment_number:06} "
+            f"to "
+            f"APT{start_appointment_number + row_count - 1:06}"
+        )
+
+        return df

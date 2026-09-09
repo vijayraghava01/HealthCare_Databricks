@@ -1,0 +1,57 @@
+resources:
+  jobs:
+    healthcare_daily_job:
+      name: healthcare_daily_job
+      parameters:
+          - name: run_mode
+            default: incremental
+      schedule:
+          quartz_cron_expression: "0 0 18 * * ?"
+          timezone_id: "Asia/Kolkata"
+          pause_status: PAUSED
+      
+
+      tasks:
+
+        - task_key: healthcare_etl
+
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.healthcare_data_platform_etl.id}
+
+        - task_key: silver_ingestion
+
+          depends_on:
+            - task_key: healthcare_etl
+
+          notebook_task:
+            notebook_path: /Workspace/Users/rydiodemo01@gmail.com/HealthCare_Databricks/databricks/notebooks/silver/SilverLayer_Ingestion
+
+          environment_key: default
+
+        
+        - task_key: data_quality
+
+          depends_on:
+            - task_key: silver_ingestion
+
+          notebook_task:
+
+            notebook_path: /Workspace/Users/rydiodemo01@gmail.com/HealthCare_Databricks/databricks/notebooks/quality/Data_Quality
+
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              run_mode: "{{job.parameters.run_mode}}"
+              
+
+          environment_key: default
+          max_retries: 2
+          min_retry_interval_millis: 10000
+
+      environments:
+
+        - environment_key: default
+          spec:
+            client: "2"
+            dependencies:
+              - ../dist/*.whl
